@@ -1,0 +1,30 @@
+const db = require("../config/db");
+require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE);
+
+const sendTestPayment = async (req, res) => {
+	const total = req.body.total * 100;
+	const { email, firstName, lastName, userId } = req.session.user;
+
+	const session = await stripe.checkout.sessions.create({
+		success_url: "http://localhost:3000/order-history",
+		line_items: [
+			{
+				price_data: {
+					currency: "usd",
+					product_data: {
+						name: "test",
+					},
+					unit_amount: total,
+				},
+				quantity: 1,
+			},
+		],
+		mode: "payment",
+	});
+	res.json({ url: session.url });
+};
+
+module.exports = {
+	sendTestPayment,
+};
